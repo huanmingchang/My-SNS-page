@@ -2,6 +2,11 @@ const BASE_URL = 'https://lighthouse-user-api.herokuapp.com'
 const INDEX_URL = BASE_URL + '/api/v1/users/'
 const users = []
 const dataPanel = document.querySelector('#data-panel')
+const searchForm = document.querySelector('#search-form')
+const searchInput = document.querySelector('#search-input')
+let filteredUser = []
+const users_per_page = 12
+const paginator = document.querySelector('#paginator')
 
 function renderUserList(data) {
   let htmlContent = ''
@@ -51,10 +56,48 @@ function renderUserModal(id) {
   })
 }
 
+// function renderPaginator(amount) {
+//   const numberOfPages = Math.ceil(amount / users_per_page)
+//   let htmlContent = ''
+//   for (page = 1; page <= numberOfPages; page++) {
+//     htmlContent += `
+//      <li class="page-item"><a class="page-link" href="#" data-page="${page}">${page}</a></li>
+//     `
+//     paginator.innerHTML = htmlContent
+//   }
+// }
+
+// function addToFavorite(id) {
+//   const list = JSON.parse(localStorage.getItem('bestFriends')) || []
+//   const user = users.find((user) => user.id === id)
+
+//   if (list.some((user) => user.id === id)) {
+//     return alert('You are already best friends!')
+//   }
+//   list.push(user)
+//   localStorage.setItem('bestFriends', JSON.stringify(list))
+// }
+
 dataPanel.addEventListener('click', function onPanelClick(event) {
   if (event.target.matches('.card-img-top')) {
     renderUserModal(Number(event.target.dataset.id))
+  } else if (event.target.matches('.btn-add-friend')) {
+    addToFavorite(Number(event.target.dataset.id))
   }
+})
+
+searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
+  event.preventDefault()
+  const keyword = searchInput.value.trim().toLowerCase()
+  filteredUser = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(keyword) ||
+      user.surname.toLowerCase().includes(keyword)
+  )
+  if (filteredUser.length === 0) {
+    return alert(`Opps! There is no peron named "${keyword}"!`)
+  }
+  renderUserList(filteredUser)
 })
 
 axios
