@@ -24,7 +24,7 @@ function renderUserList(data) {
                 <h6 class="card-title">${user.name} ${user.surname}</h6>
               </div>
 							<div class="d-flex justify-content-end mx-3 my-2">
-							  <button class="btn btn-outline-danger btn-add-friend" data-bs-id="${user.id}"><i class="far fa-heart"></i></button>
+							  <button class="btn btn-outline-danger btn-add-friend" data-id="${user.id}"><i class="far fa-heart"></i></button>
 							</div>
             </div>
           </div>
