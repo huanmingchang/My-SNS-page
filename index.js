@@ -5,7 +5,7 @@ const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
 let filteredUser = []
-const users_per_page = 12
+const users_per_page = 24
 const paginator = document.querySelector('#paginator')
 
 function renderUserList(data) {
@@ -56,27 +56,33 @@ function renderUserModal(id) {
   })
 }
 
-// function renderPaginator(amount) {
-//   const numberOfPages = Math.ceil(amount / users_per_page)
-//   let htmlContent = ''
-//   for (page = 1; page <= numberOfPages; page++) {
-//     htmlContent += `
-//      <li class="page-item"><a class="page-link" href="#" data-page="${page}">${page}</a></li>
-//     `
-//     paginator.innerHTML = htmlContent
-//   }
-// }
+function renderPaginator(amount) {
+  const numberOfPages = Math.ceil(amount / users_per_page)
+  let htmlContent = ''
+  for (page = 1; page <= numberOfPages; page++) {
+    htmlContent += `
+     <li class="page-item"><a class="page-link text-muted" href="#" data-page="${page}">${page}</a></li>
+    `
+    paginator.innerHTML = htmlContent
+  }
+}
 
-// function addToFavorite(id) {
-//   const list = JSON.parse(localStorage.getItem('bestFriends')) || []
-//   const user = users.find((user) => user.id === id)
+function getUsersByPage(page) {
+  const data = filteredUser.length ? filteredUser : users
+  const startIndex = (page - 1) * users_per_page
+  return data.slice(startIndex, startIndex + users_per_page)
+}
 
-//   if (list.some((user) => user.id === id)) {
-//     return alert('You are already best friends!')
-//   }
-//   list.push(user)
-//   localStorage.setItem('bestFriends', JSON.stringify(list))
-// }
+function addToFavorite(id) {
+  const list = JSON.parse(localStorage.getItem('bestFriends')) || []
+  const user = users.find((user) => user.id === id)
+
+  if (list.some((user) => user.id === id)) {
+    return alert('You are already best friends!')
+  }
+  list.push(user)
+  localStorage.setItem('bestFriends', JSON.stringify(list))
+}
 
 dataPanel.addEventListener('click', function onPanelClick(event) {
   if (event.target.matches('.card-img-top')) {
@@ -84,6 +90,12 @@ dataPanel.addEventListener('click', function onPanelClick(event) {
   } else if (event.target.matches('.btn-add-friend')) {
     addToFavorite(Number(event.target.dataset.id))
   }
+})
+
+paginator.addEventListener('click', function onPaginatorClick(event) {
+  if (event.target.tagName !== 'A') return
+  const page = Number(event.target.dataset.page)
+  renderUserList(getUsersByPage(page))
 })
 
 searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
@@ -97,13 +109,15 @@ searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
   if (filteredUser.length === 0) {
     return alert(`Opps! There is no peron named "${keyword}"!`)
   }
-  renderUserList(filteredUser)
+  renderPaginator(filteredUser.length)
+  renderUserList(getUsersByPage(1))
 })
 
 axios
   .get(INDEX_URL)
   .then((response) => {
     users.push(...response.data.results)
-    renderUserList(users)
+    renderPaginator(users.length)
+    renderUserList(getUsersByPage(1))
   })
   .catch((error) => console.log(error))
