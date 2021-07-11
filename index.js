@@ -7,10 +7,14 @@ const searchInput = document.querySelector('#search-input')
 let filteredUser = []
 const users_per_page = 24
 const paginator = document.querySelector('#paginator')
+let bestFriends = []
 
 function renderUserList(data) {
   let htmlContent = ''
   data.forEach((user) => {
+    const heartClass = bestFriends.some((f) => f.id === user.id)
+      ? 'fas fa-heart'
+      : 'far fa-heart'
     htmlContent += `
         <div class="col-lg-2 col-sm-3">
           <div class="mb-2">
@@ -24,7 +28,7 @@ function renderUserList(data) {
                 <h6 class="card-title">${user.name} ${user.surname}</h6>
               </div>
 							<div class="d-flex justify-content-end mx-3 my-2">
-							  <button class="btn btn-outline-danger btn-add-friend" data-id="${user.id}"><i class="far fa-heart"></i></button>
+							  <button class="btn btn-outline-danger btn-add-friend" data-id="${user.id}"><i class="${heartClass}"></i></button>
 							</div>
             </div>
           </div>
@@ -74,21 +78,29 @@ function getUsersByPage(page) {
 }
 
 function addToFavorite(id) {
-  const list = JSON.parse(localStorage.getItem('bestFriends')) || []
   const user = users.find((user) => user.id === id)
 
-  if (list.some((user) => user.id === id)) {
+  if (bestFriends.some((user) => user.id === id)) {
     return alert('You are already best friends!')
   }
-  list.push(user)
-  localStorage.setItem('bestFriends', JSON.stringify(list))
+  bestFriends.push(user)
+  localStorage.setItem('bestFriends', JSON.stringify(bestFriends))
+  const addHeart = document.querySelector(
+    `button[data-id="${id}"] > i.fa-heart`
+  )
+  addHeart.classList.remove('far')
+  addHeart.classList.add('fas')
 }
 
 dataPanel.addEventListener('click', function onPanelClick(event) {
   if (event.target.matches('.card-img-top')) {
     renderUserModal(Number(event.target.dataset.id))
-  } else if (event.target.matches('.btn-add-friend')) {
+  }
+  if (event.target.matches('.btn-add-friend')) {
     addToFavorite(Number(event.target.dataset.id))
+  } else if (event.target.matches('.fa-heart')) {
+    const parent = event.target.parentNode
+    addToFavorite(Number(parent.dataset.id))
   }
 })
 
@@ -116,6 +128,7 @@ searchForm.addEventListener('submit', function onSearchFormSubmitted(event) {
 axios
   .get(INDEX_URL)
   .then((response) => {
+    bestFriends = JSON.parse(localStorage.getItem('bestFriends') || '[]')
     users.push(...response.data.results)
     renderPaginator(users.length)
     renderUserList(getUsersByPage(1))

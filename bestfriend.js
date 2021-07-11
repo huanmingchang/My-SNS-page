@@ -68,6 +68,9 @@ dataPanel.addEventListener('click', function onPanelClick(event) {
     renderUserModal(Number(event.target.dataset.id))
   } else if (event.target.matches('.btn-remove-friend')) {
     removeFromFavorite(Number(event.target.dataset.id))
+  } else if (event.target.matches('.fa-heart-broken')) {
+    const parent = event.target.parentNode
+    removeFromFavorite(Number(parent.dataset.id))
   }
 })
 
